@@ -1,11 +1,14 @@
 from http import HTTPStatus
+
+from django.urls import reverse
 import pytest
 from pytest_django.asserts import assertRedirects, assertFormError
 
-from django.urls import reverse
+from news.models import Comment
 from news.forms import BAD_WORDS, WARNING
 
-from news.models import Comment
+PK_OF_COMMENT = pytest.lazy_fixture('pk_for_comment_args')
+PK_OF_NEWS = pytest.lazy_fixture('pk_for_news_args')
 
 
 def test_user_can_create_comment(
@@ -16,11 +19,11 @@ def test_user_can_create_comment(
     assertRedirects(response, f'{url}#comments')
     assert Comment.objects.count() == 1
     new_comment = Comment.objects.get()
-    assert new_comment.text == form_data['text']
+    assert new_comment.news == news
     assert new_comment.author == author
+    assert new_comment.text == form_data['text']
 
 
-@pytest.mark.django_db
 def test_anonymous_user_cant_create_comment(
     client, form_data, news, pk_for_news_args
 ):
@@ -48,13 +51,16 @@ def test_user_cant_use_bad_words(
 
 
 def test_author_can_edit_comment(
-    author_client, form_data, pk_for_comment_args, comment, pk_for_news_args
+    author_client, news, author, form_data,
+    pk_for_comment_args, comment, pk_for_news_args,
 ):
     url = reverse('news:edit', args=pk_for_comment_args)
     news_url = reverse('news:detail', args=pk_for_news_args)
     response = author_client.post(url, form_data)
     assertRedirects(response, f'{news_url}#comments')
     comment.refresh_from_db()
+    assert comment.news == news
+    assert comment.author == author
     assert comment.text == form_data['text']
 
 
@@ -65,6 +71,8 @@ def test_another_user_cant_edit_comment(
     response = admin_client.post(url, form_data)
     assert response.status_code == HTTPStatus.NOT_FOUND
     comment_from_db = Comment.objects.get(pk=comment.pk)
+    assert comment.news == comment_from_db.news
+    assert comment.author == comment_from_db.author
     assert comment.text == comment_from_db.text
 
 
@@ -82,6 +90,8 @@ def test_another_user_cant_delete_comment(
     admin_client, form_data, pk_for_comment_args,
 ):
     url = reverse('news:delete', args=pk_for_comment_args)
+    db_befor_try_to_change = Comment.objects.all()
     response = admin_client.post(url)
     assert response.status_code == HTTPStatus.NOT_FOUND
-    assert Comment.objects.count() == 1
+    db_after_try_to_change = Comment.objects.all()
+    assert db_befor_try_to_change, db_after_try_to_change
