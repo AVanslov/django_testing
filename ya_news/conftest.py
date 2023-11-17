@@ -7,6 +7,13 @@ from yanews import settings
 COMMENTS_COUNT = 10
 
 
+@pytest.fixture(autouse=True)
+def enable_db_access_for_all_tests(
+    db,
+):
+    pass
+
+
 @pytest.fixture
 def author(django_user_model):
     return django_user_model.objects.create(username='Автор')
