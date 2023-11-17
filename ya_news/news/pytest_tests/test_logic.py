@@ -8,8 +8,6 @@ from news.forms import BAD_WORDS, WARNING
 from news.models import Comment
 
 
-
-
 def test_user_can_create_comment(
     author_client, author, news, form_data, pk_for_news_args
 ):
@@ -23,7 +21,9 @@ def test_user_can_create_comment(
 
 
 @pytest.mark.django_db
-def test_anonymous_user_cant_create_comment(client, form_data, news, pk_for_news_args):
+def test_anonymous_user_cant_create_comment(
+    client, form_data, news, pk_for_news_args
+):
     url = reverse('news:detail', args=pk_for_news_args)
     response = client.post(url, data=form_data)
     login_url = reverse('users:login')
