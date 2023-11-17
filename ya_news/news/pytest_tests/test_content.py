@@ -1,6 +1,5 @@
 from django.urls import reverse
 import pytest
-from news.forms import CommentForm
 
 from yanews import settings
 
