@@ -110,18 +110,20 @@ class TestNoteCreateEdit(CreateTestObjects):
         )
 
     def test_author_can_edit_note(self):
-        response = self.author_client.post(self.edit_url, data=self.form_data)
+        response = self.author_client.post(
+            self.edit_url, data=self.update_form_data
+        )
         self.assertRedirects(response, self.url_success)
         self.note.refresh_from_db()
         self.assertEqual(self.note.text, UPDATE_NOTE_TEXT)
         self.assertEqual(
-            self.note.title, self.form_data['title'], NOTE_TITLE
+            self.note.title, self.update_form_data['title'], NOTE_TITLE
         )
         self.assertEqual(
-            self.note.text, self.form_data['text'], UPDATE_NOTE_TEXT
+            self.note.text, self.update_form_data['text'], UPDATE_NOTE_TEXT
         )
         self.assertEqual(
-            self.note.slug, self.form_data['slug'], NOTE_SLUG
+            self.note.slug, self.update_form_data['slug'], NOTE_SLUG
         )
         self.assertEqual(
             self.note.author, self.author
@@ -131,15 +133,16 @@ class TestNoteCreateEdit(CreateTestObjects):
         response = self.reader_client.post(self.edit_url, data=self.form_data)
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
         self.note.refresh_from_db()
+        note = Note.objects.get(slug=NOTE_SLUG)
         self.assertEqual(
-            self.note.title, self.form_data['title'], NOTE_TITLE
+            note.title, self.form_data['title'], NOTE_TITLE
         )
         self.assertEqual(
-            self.note.text, self.form_data['text'], NOTE_TEXT
+            note.text, self.form_data['text'], NOTE_TEXT
         )
         self.assertEqual(
-            self.note.slug, self.form_data['slug'], NOTE_SLUG
+            note.slug, self.form_data['slug'], NOTE_SLUG
         )
         self.assertEqual(
-            self.note.author, self.author
+            note.author, self.author
         )

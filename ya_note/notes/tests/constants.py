@@ -79,7 +79,7 @@ class CreateTestObjects(TestCase):
                 'slug': SECOND_NOTE_SLUG,
             }
         if update_data_in_note_form:
-            cls.form_data = {
+            cls.update_form_data = {
                 'title': NOTE_TITLE,
                 'text': UPDATE_NOTE_TEXT,
                 'slug': NOTE_SLUG,
