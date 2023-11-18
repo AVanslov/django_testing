@@ -19,7 +19,6 @@ def test_news_order(many_news, client):
             'object_list'
         ]
     ]
-
     assert all_dates, sorted(all_dates, reverse=True)
 
 
