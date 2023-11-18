@@ -1,13 +1,7 @@
 from django.urls import reverse
-import pytest
 from news.forms import CommentForm
 
 from yanews import settings
-
-AUTHOR = pytest.lazy_fixture('author_client')
-ANONYMNOUS_USER = pytest.lazy_fixture('client')
-PK_OF_COMMENT = pytest.lazy_fixture('pk_for_comment_args')
-PK_OF_NEWS = pytest.lazy_fixture('pk_for_news_args')
 
 
 def test_news_count(many_news, client):
@@ -29,8 +23,8 @@ def test_news_order(many_news, client):
     assert all_dates, sorted(all_dates, reverse=True)
 
 
-def test_comments_order(client, news, many_comments, pk_for_news_args):
-    url = reverse('news:detail', args=(pk_for_news_args))
+def test_comments_order(client, news, many_comments):
+    url = reverse('news:detail', args=(news.pk,))
     response = client.get(url)
     assert 'news' in response.context
     news = response.context['news']
@@ -40,16 +34,16 @@ def test_comments_order(client, news, many_comments, pk_for_news_args):
 
 
 def test_form_in_context_for_anonymnous_users(
-    client, pk_for_news_args
+    client, news
 ):
-    url = reverse('news:detail', args=pk_for_news_args)
+    url = reverse('news:detail', args=(news.pk,))
     response = client.get(url)
     assert 'form' not in response.context
 
 
 def test_form_in_context_for_author(
-    author_client, pk_for_news_args
+    author_client, news
 ):
-    url = reverse('news:detail', args=pk_for_news_args)
+    url = reverse('news:detail', args=(news.pk,))
     response = author_client.get(url)
     assert isinstance('form', CommentForm) in response.context
