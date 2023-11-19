@@ -9,6 +9,8 @@ from news.pytest_tests.constants import (
     AUTHOR,
     COMMENT_DELETE_URL,
     COMMENT_EDIT_URL,
+    EXPECTED_AFTER_DELETE_URL,
+    EXPECTED_AFTER_EDIT_URL,
     HOME_URL,
     LOGIN_URL,
     LOGOUT_URL,
@@ -34,18 +36,15 @@ from news.pytest_tests.constants import (
 def test_pages_return_code(
     url, parametrized_client, expected_status
 ):
-    response = parametrized_client.get(url)
-    assert response.status_code == expected_status
+    assert parametrized_client.get(url).status_code == expected_status
 
 
 @pytest.mark.parametrize(
-    'url',
+    'url, expected_url',
     (
-        COMMENT_EDIT_URL,
-        COMMENT_DELETE_URL,
+        (COMMENT_EDIT_URL, EXPECTED_AFTER_EDIT_URL,),
+        (COMMENT_DELETE_URL, EXPECTED_AFTER_DELETE_URL,),
     ),
 )
-def test_redirects(client, url):
-    expected_url = f'{LOGIN_URL}?next={url}'
-    response = client.get(url)
-    assertRedirects(response, expected_url)
+def test_redirects(client, url, expected_url):
+    assertRedirects(client.get(url), expected_url)

@@ -1,10 +1,12 @@
 from datetime import datetime, timedelta
+
 from django.test import Client
 from django.urls import reverse
 import pytest
 
 from news.models import News, Comment
 from yanews import settings
+from .constants import LOGIN_URL
 
 COMMENTS_COUNT = 10
 
@@ -42,17 +44,20 @@ def news_detail_url(news):
 
 
 @pytest.fixture
+def comment_success_after_detail_url(news_detail_url):
+    return f'{LOGIN_URL}?next={news_detail_url}'
+
+
+@pytest.fixture
 def many_news():
     today = datetime.today()
     return News.objects.bulk_create(
-        [
-            News(
-                title=f'Новость {index}',
-                text='Просто текст.',
-                date=today - timedelta(days=index)
-            )
-            for index in range(settings.NEWS_COUNT_ON_HOME_PAGE + 1)
-        ]
+        News(
+            title=f'Новость {index}',
+            text='Просто текст.',
+            date=today - timedelta(days=index)
+        )
+        for index in range(settings.NEWS_COUNT_ON_HOME_PAGE + 1)
     )
 
 
@@ -71,8 +76,18 @@ def comment_edit_url(comment):
 
 
 @pytest.fixture
+def comment_success_after_edit_url(comment_edit_url):
+    return f'{LOGIN_URL}?next={comment_edit_url}'
+
+
+@pytest.fixture
 def comment_delete_url(comment):
     return reverse('news:delete', args=(comment.pk,))
+
+
+@pytest.fixture
+def comment_success_after_delete_url(comment_delete_url):
+    return f'{LOGIN_URL}?next={comment_delete_url}'
 
 
 @pytest.fixture
