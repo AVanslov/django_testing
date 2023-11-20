@@ -1,8 +1,6 @@
 from http import HTTPStatus
 
-from django.contrib.auth import get_user_model
-
-from notes.tests.constants import (
+from notes.tests.constants_and_main_class import (
     ADD_NOTE_URL,
     DELETE_URL,
     DETAIL_URL,
@@ -11,12 +9,16 @@ from notes.tests.constants import (
     LIST_OF_NOTES_URL,
     LOGIN_URL,
     LOGOUT_URL,
+    REDIRECT_AFTER_LIST_OF_NOTES_URL,
+    REDIRECT_AFTER_TRY_ADD_NOTE_URL,
+    REDIRECT_AFTER_TRY_DELETE_URL,
+    REDIRECT_AFTER_TRY_DETAIL_URL,
+    REDIRECT_AFTER_TRY_EDIT_URL,
+    REDIRECT_AFTER_TRY_SECCESS_CHANGED_NOTE_URL,
     SECCESS_CHANGED_NOTE_URL,
     SIGNUP_URL,
     CreateTestObjects,
 )
-
-User = get_user_model()
 
 
 class TestRoutes(CreateTestObjects):
@@ -28,7 +30,7 @@ class TestRoutes(CreateTestObjects):
         )
 
     def test_pages_availability(self):
-        variations_of_access_checks = (
+        cases = (
             (HOME_URL, self.client, HTTPStatus.OK),
             (LOGIN_URL, self.client, HTTPStatus.OK),
             (LOGOUT_URL, self.client, HTTPStatus.OK),
@@ -50,20 +52,37 @@ class TestRoutes(CreateTestObjects):
             url,
             parametrized_client,
             expected_status,
-        ) in variations_of_access_checks:
+        ) in cases:
             self.assertEqual(
                 parametrized_client.get(url).status_code, expected_status
             )
 
     def test_redirect_for_anonymous_client(self):
-        for url in (
-            ADD_NOTE_URL,
-            SECCESS_CHANGED_NOTE_URL,
-            LIST_OF_NOTES_URL,
-            EDIT_URL,
-            DELETE_URL,
-            DETAIL_URL,
+        for url, redirect_url in (
+            (
+                ADD_NOTE_URL,
+                REDIRECT_AFTER_TRY_ADD_NOTE_URL,
+            ),
+            (
+                SECCESS_CHANGED_NOTE_URL,
+                REDIRECT_AFTER_TRY_SECCESS_CHANGED_NOTE_URL,
+            ),
+            (
+                LIST_OF_NOTES_URL,
+                REDIRECT_AFTER_LIST_OF_NOTES_URL,
+            ),
+            (
+                EDIT_URL,
+                REDIRECT_AFTER_TRY_EDIT_URL,
+            ),
+            (
+                DELETE_URL,
+                REDIRECT_AFTER_TRY_DELETE_URL,
+            ),
+            (
+                DETAIL_URL,
+                REDIRECT_AFTER_TRY_DETAIL_URL,
+            ),
         ):
             with self.subTest(name=url):
-                redirect_url = f'{LOGIN_URL}?next={url}'
                 self.assertRedirects(self.client.get(url), redirect_url)
