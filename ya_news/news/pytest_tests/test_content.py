@@ -1,5 +1,3 @@
-from django.urls import reverse
-
 from news.forms import CommentForm
 from news.pytest_tests.constants import HOME_URL
 from yanews import settings
@@ -23,30 +21,31 @@ def test_news_order(many_news, client):
     assert all_dates == sorted(all_dates, reverse=True)
 
 
-def test_comments_order(client, news, many_comments):
-    url = reverse('news:detail', args=(news.pk,))
-    response = client.get(url)
+def test_comments_order(client, news, many_comments, news_detail_url):
+    response = client.get(news_detail_url)
     assert 'news' in response.context
     news = response.context['news']
     all_comments_dates = [
         comment.created for comment in news
         .comment_set.filter(news=news)
     ]
-    assert all_comments_dates == sorted(all_comments_dates, reverse=False)
+    assert all_comments_dates == sorted(all_comments_dates)
 
 
 def test_form_in_context_for_anonymnous_users(
-    client, news
+    client,
+    news_detail_url,
 ):
-    url = reverse('news:detail', args=(news.pk,))
-    assert 'form' not in client.get(url).context
+    assert 'form' not in client.get(news_detail_url).context
 
 
 def test_form_in_context_for_author(
-    author_client, news
+    author_client,
+    news_detail_url,
 ):
-    url = reverse('news:detail', args=(news.pk,))
-    response = author_client.get(url)
+    response = author_client.get(news_detail_url)
     assert 'form' in response.context
-    form = response.context['form']
-    assert isinstance(form, CommentForm)
+    assert isinstance(
+        response.context['form'],
+        CommentForm,
+    )

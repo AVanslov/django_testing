@@ -54,7 +54,7 @@ def test_author_can_edit_comment(
 
 
 def test_another_user_cant_edit_comment(
-    admin_client, comment, comment_edit_url
+    admin_client, comment, comment_edit_url,
 ):
     response = admin_client.post(comment_edit_url, FORM_DATA)
     assert response.status_code == HTTPStatus.NOT_FOUND
@@ -65,7 +65,7 @@ def test_another_user_cant_edit_comment(
 
 
 def test_author_can_delete_comment(
-    author_client, news_detail_url, comment_delete_url
+    author_client, news_detail_url, comment_delete_url,
 ):
     response = author_client.post(comment_delete_url)
     assertRedirects(response, f'{news_detail_url}#comments')
@@ -73,10 +73,17 @@ def test_author_can_delete_comment(
 
 
 def test_another_user_cant_delete_comment(
-    admin_client, comment_delete_url
+    admin_client, comment, comment_delete_url,
 ):
     db_befor_try_to_change = Comment.objects.all()
     response = admin_client.post(comment_delete_url)
     assert response.status_code == HTTPStatus.NOT_FOUND
     db_after_try_to_change = Comment.objects.all()
-    assertQuerysetEqual(db_befor_try_to_change, db_after_try_to_change)
+    assertQuerysetEqual(
+        db_befor_try_to_change,
+        db_after_try_to_change,
+    )
+    comment_from_db = Comment.objects.get(pk=comment.pk)
+    assert comment.news == comment_from_db.news
+    assert comment.author == comment_from_db.author
+    assert comment.text == comment_from_db.text
