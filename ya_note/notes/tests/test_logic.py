@@ -116,16 +116,17 @@ class TestNoteCreateEdit(TestObjects):
             data=self.update_form_data
         )
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
+        note = Note.objects.get(id=self.note.id)
         self.assertEqual(
             self.note,
-            Note.objects.get(id=self.note.id),
+            note,
         )
         self.assertEqual(
-            self.note.title, self.form_data['title'],
+            self.note.title, note.title,
         )
         self.assertEqual(
-            self.note.text, self.form_data['text'],
+            self.note.text, note.text,
         )
         self.assertEqual(
-            self.note.slug, self.form_data['slug'],
+            self.note.slug, note.slug,
         )
