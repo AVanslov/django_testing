@@ -15,15 +15,12 @@ class TestDetailPage(TestObjects):
         )
 
     def test_visibility_note_on_list_page(self):
-        context = self.author.get(
+        notes = self.author.get(
             LIST_OF_NOTES_URL
         ).context['object_list']
-        self.assertIn(self.note, context)
-        notes_from_context = set(context)
-        notes_from_bd = set(Note.objects.all().filter(id=self.note.id))
-        notes = notes_from_context.intersection(notes_from_bd)
-        self.assertEqual(len(notes), 1)
-        note = notes.pop()
+        self.assertIn(self.note, notes)
+        self.assertEqual(len(notes), Note.objects.count())
+        note = notes.get(id=self.note.id)
         self.assertEqual(note.title, self.note.title)
         self.assertEqual(note.text, self.note.text)
         self.assertEqual(note.slug, self.note.slug)
@@ -42,12 +39,13 @@ class TestDetailPage(TestObjects):
             ADD_NOTE_URL,
         )
         for url in urls:
-            with self.subTest(name=url):
+            url = self.author.get(url)
+            with self.subTest(url=url):
                 self.assertIn(
                     'form',
-                    self.author.get(url).context
+                    url.context
                 )
                 self.assertIsInstance(
-                    self.author.get(url).context['form'],
+                    url.context['form'],
                     NoteForm
                 )

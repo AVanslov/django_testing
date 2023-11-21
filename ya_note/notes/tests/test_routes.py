@@ -61,30 +61,15 @@ class TestRoutes(TestObjects):
 
     def test_redirect_for_anonymous_client(self):
         for url, redirect_url in (
-            (
-                ADD_NOTE_URL,
-                REDIRECT_AFTER_TRY_ADD_NOTE_URL,
-            ),
+            (ADD_NOTE_URL, REDIRECT_AFTER_TRY_ADD_NOTE_URL,),
             (
                 SECCESS_CHANGED_NOTE_URL,
                 REDIRECT_AFTER_TRY_SECCESS_CHANGED_NOTE_URL,
             ),
-            (
-                LIST_OF_NOTES_URL,
-                REDIRECT_AFTER_LIST_OF_NOTES_URL,
-            ),
-            (
-                EDIT_URL,
-                REDIRECT_AFTER_TRY_EDIT_URL,
-            ),
-            (
-                DELETE_URL,
-                REDIRECT_AFTER_TRY_DELETE_URL,
-            ),
-            (
-                DETAIL_URL,
-                REDIRECT_AFTER_TRY_DETAIL_URL,
-            ),
+            (LIST_OF_NOTES_URL, REDIRECT_AFTER_LIST_OF_NOTES_URL,),
+            (EDIT_URL, REDIRECT_AFTER_TRY_EDIT_URL,),
+            (DELETE_URL, REDIRECT_AFTER_TRY_DELETE_URL,),
+            (DETAIL_URL, REDIRECT_AFTER_TRY_DETAIL_URL,),
         ):
             with self.subTest(url=url):
                 self.assertRedirects(self.client.get(url), redirect_url)
