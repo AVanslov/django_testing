@@ -111,25 +111,21 @@ class TestNoteCreateEdit(TestObjects):
         )
 
     def test_user_cant_edit_note_of_another_user(self):
-        note = self.note
         response = self.reader.post(
             EDIT_URL,
             data=self.update_form_data
         )
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
         self.assertEqual(
-            note,
+            self.note,
             Note.objects.get(id=self.note.id),
         )
         self.assertEqual(
-            note.title, self.form_data['title'],
+            self.note.title, self.form_data['title'],
         )
         self.assertEqual(
-            note.text, self.form_data['text'],
+            self.note.text, self.form_data['text'],
         )
         self.assertEqual(
-            note.slug, self.form_data['slug'],
-        )
-        self.assertEqual(
-            note.author, self.note.author
+            self.note.slug, self.form_data['slug'],
         )

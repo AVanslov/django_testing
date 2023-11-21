@@ -1,5 +1,4 @@
 from notes.forms import NoteForm
-from notes.models import Note
 from notes.tests.constants_and_main_class import (
     ADD_NOTE_URL, EDIT_URL, TestObjects
 )
@@ -19,15 +18,8 @@ class TestDetailPage(TestObjects):
             LIST_OF_NOTES_URL
         ).context['object_list']
         self.assertIn(self.note, notes)
-        self.assertEqual(len(notes), Note.objects.count())
-        self.assertEqual(
-            len(
-                set(notes).intersection(
-                    set(Note.objects.all().filter(id=self.note.id))
-                )
-            ), 1
-        )
-        note = notes.get(id=self.note.id)
+        self.assertEqual(len(notes), 1)
+        note = notes[0]
         self.assertEqual(note.title, self.note.title)
         self.assertEqual(note.text, self.note.text)
         self.assertEqual(note.slug, self.note.slug)
