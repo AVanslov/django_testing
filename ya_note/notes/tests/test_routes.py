@@ -14,7 +14,7 @@ from notes.tests.constants_and_main_class import (
     REDIRECT_AFTER_TRY_DELETE_URL,
     REDIRECT_AFTER_TRY_DETAIL_URL,
     REDIRECT_AFTER_TRY_EDIT_URL,
-    REDIRECT_AFTER_TRY_SECCESS_CHANGED_NOTE_URL,
+    REDIRECT_AFTER_EDIT_URL,
     SECCESS_CHANGED_NOTE_URL,
     SIGNUP_URL,
     TestObjects,
@@ -62,10 +62,7 @@ class TestRoutes(TestObjects):
     def test_redirect_for_anonymous_client(self):
         for url, redirect_url in (
             (ADD_NOTE_URL, REDIRECT_AFTER_TRY_ADD_NOTE_URL,),
-            (
-                SECCESS_CHANGED_NOTE_URL,
-                REDIRECT_AFTER_TRY_SECCESS_CHANGED_NOTE_URL,
-            ),
+            (SECCESS_CHANGED_NOTE_URL, REDIRECT_AFTER_EDIT_URL,),
             (LIST_OF_NOTES_URL, REDIRECT_AFTER_LIST_OF_NOTES_URL,),
             (EDIT_URL, REDIRECT_AFTER_TRY_EDIT_URL,),
             (DELETE_URL, REDIRECT_AFTER_TRY_DELETE_URL,),

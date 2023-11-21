@@ -20,6 +20,13 @@ class TestDetailPage(TestObjects):
         ).context['object_list']
         self.assertIn(self.note, notes)
         self.assertEqual(len(notes), Note.objects.count())
+        self.assertEqual(
+            len(
+                set(notes).intersection(
+                    set(Note.objects.all().filter(id=self.note.id))
+                )
+            ), 1
+        )
         note = notes.get(id=self.note.id)
         self.assertEqual(note.title, self.note.title)
         self.assertEqual(note.text, self.note.text)
@@ -39,13 +46,13 @@ class TestDetailPage(TestObjects):
             ADD_NOTE_URL,
         )
         for url in urls:
-            url = self.author.get(url)
+            request = self.author.get(url)
             with self.subTest(url=url):
                 self.assertIn(
                     'form',
-                    url.context
+                    request.context
                 )
                 self.assertIsInstance(
-                    url.context['form'],
+                    request.context['form'],
                     NoteForm
                 )
