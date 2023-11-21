@@ -1,11 +1,12 @@
 from notes.forms import NoteForm
+from notes.models import Note
 from notes.tests.constants_and_main_class import (
-    ADD_NOTE_URL, EDIT_URL, CreateTestObjects
+    ADD_NOTE_URL, EDIT_URL, TestObjects
 )
 from notes.tests.constants_and_main_class import LIST_OF_NOTES_URL
 
 
-class TestDetailPage(CreateTestObjects):
+class TestDetailPage(TestObjects):
 
     @classmethod
     def setUpTestData(cls):
@@ -14,17 +15,23 @@ class TestDetailPage(CreateTestObjects):
         )
 
     def test_visibility_note_on_list_page(self):
-        response = self.author_client.get(LIST_OF_NOTES_URL)
-        self.assertIn(self.note, response.context['object_list'])
-        notes = response.context['object_list']
-        self.assertEqual(notes[0].title, self.note.title)
-        self.assertEqual(notes[0].text, self.note.text)
-        self.assertEqual(notes[0].slug, self.note.slug)
-        self.assertEqual(notes[0].author, self.note.author)
+        context = self.author.get(
+            LIST_OF_NOTES_URL
+        ).context['object_list']
+        self.assertIn(self.note, context)
+        notes_from_context = set(context)
+        notes_from_bd = set(Note.objects.all().filter(id=self.note.id))
+        notes = notes_from_context.intersection(notes_from_bd)
+        self.assertEqual(len(notes), 1)
+        note = notes.pop()
+        self.assertEqual(note.title, self.note.title)
+        self.assertEqual(note.text, self.note.text)
+        self.assertEqual(note.slug, self.note.slug)
+        self.assertEqual(note.author, self.note.author)
 
     def test_visibility_notes_other_author(self):
         self.assertNotIn(
-            self.note, self.reader_client.get(
+            self.note, self.reader.get(
                 LIST_OF_NOTES_URL
             ).context['object_list']
         )
@@ -38,9 +45,9 @@ class TestDetailPage(CreateTestObjects):
             with self.subTest(name=url):
                 self.assertIn(
                     'form',
-                    self.author_client.get(url).context
+                    self.author.get(url).context
                 )
                 self.assertIsInstance(
-                    self.author_client.get(url).context['form'],
+                    self.author.get(url).context['form'],
                     NoteForm
                 )

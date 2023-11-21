@@ -58,7 +58,7 @@ REDIRECT_AFTER_TRY_DETAIL_URL = (
 User = get_user_model()
 
 
-class CreateTestObjects(TestCase):
+class TestObjects(TestCase):
     @classmethod
     def setUpTestData(
         cls,
@@ -69,18 +69,18 @@ class CreateTestObjects(TestCase):
         enter_second_data_into_note_form=False,
         update_data_in_note_form=False,
     ):
-        cls.author = User.objects.create(username='Винни Пух')
-        cls.author_client = Client()
-        cls.author_client.force_login(cls.author)
+        cls.auth = User.objects.create(username='Винни Пух')
+        cls.author = Client()
+        cls.author.force_login(cls.auth)
         if create_reader:
-            cls.reader = User.objects.create(username='Пятачок')
-            cls.reader_client = Client()
-            cls.reader_client.force_login(cls.reader)
+            cls.read = User.objects.create(username='Пятачок')
+            cls.reader = Client()
+            cls.reader.force_login(cls.read)
         if create_note:
             cls.note = Note.objects.create(
                 title=NOTE_TITLE,
                 text=NOTE_TEXT,
-                author=cls.author,
+                author=cls.auth,
             )
         if enter_data_into_note_form:
             cls.form_data = {

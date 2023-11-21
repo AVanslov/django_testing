@@ -10,12 +10,11 @@ from notes.tests.constants_and_main_class import (
     EDIT_URL,
     NOTE_SLUG,
     SECCESS_CHANGED_NOTE_URL,
-    UPDATE_NOTE_TEXT,
-    CreateTestObjects,
+    TestObjects,
 )
 
 
-class TestNoteCreateEdit(CreateTestObjects):
+class TestNoteCreateEdit(TestObjects):
 
     @classmethod
     def setUpTestData(cls):
@@ -36,34 +35,29 @@ class TestNoteCreateEdit(CreateTestObjects):
             notes_in_db_after_try_to_change,
         )
 
-    def test_user_can_create_note(self):
-        notes_befor = set(Note.objects.all())
-        response = self.author_client.post(
-            ADD_NOTE_URL, data=self.second_form_data
+    def create_one_note(self):
+        notes = set(Note.objects.all())
+        response = self.author.post(
+            ADD_NOTE_URL, data=self.second_form_data,
         )
         self.assertRedirects(response, SECCESS_CHANGED_NOTE_URL)
-        notes_after = set(Note.objects.all())
-        created_notes = notes_after.difference(
-            notes_befor
-        )
-        self.assertEqual(len(created_notes), 1)
-        note = created_notes.pop()
+        notes = set(Note.objects.all()) - notes
+        self.assertEqual(len(notes), 1)
+        note = notes.pop()
+        self.assertEqual(note.title, self.second_form_data['title'])
+        self.assertEqual(note.text, self.second_form_data['text'])
+        self.assertEqual(note.author, self.auth)
+        return note
+
+    def test_user_can_create_note(self):
         self.assertEqual(
-            note.title, self.second_form_data['title']
-        )
-        self.assertEqual(
-            note.text, self.second_form_data['text']
-        )
-        self.assertEqual(
-            note.slug, self.second_form_data['slug']
-        )
-        self.assertEqual(
-            note.author, self.author
+            self.create_one_note().slug,
+            self.second_form_data['slug'],
         )
 
     def test_user_cant_use_used_slug(self):
         notes_in_db_befor_try_to_change = Note.objects.all()
-        response = self.author_client.post(ADD_NOTE_URL, data=self.form_data)
+        response = self.author.post(ADD_NOTE_URL, data=self.form_data)
         self.assertFormError(
             response,
             form='form',
@@ -77,42 +71,17 @@ class TestNoteCreateEdit(CreateTestObjects):
         )
 
     def test_slug_is_translit_title(self):
-        notes_befor = set(Note.objects.all())
-        response = self.author_client.post(
-            ADD_NOTE_URL,
-            data=self.first_form_data,
-        )
-        self.assertRedirects(response, SECCESS_CHANGED_NOTE_URL)
-        notes_after = set(Note.objects.all())
-        created_notes = notes_after.difference(
-            notes_befor
-        )
-        self.assertEqual(len(created_notes), 1)
-        note = created_notes.pop()
+        note = self.create_one_note()
         self.assertEqual(note.slug, slugify(note.title))
-        self.assertEqual(
-            note.title, self.first_form_data['title']
-        )
-        self.assertEqual(
-            note.text, self.first_form_data['text']
-        )
-        self.assertEqual(
-            note.author, self.author
-        )
 
     def test_author_can_delete_note(self):
-        notes_befor = set(Note.objects.all())
-        response = self.author_client.delete(DELETE_URL)
+        response = self.author.delete(DELETE_URL)
         self.assertRedirects(response, SECCESS_CHANGED_NOTE_URL)
-        notes_after = set(Note.objects.all())
-        created_notes = notes_after.difference(
-            notes_befor
-        )
-        self.assertEqual(len(created_notes), 0)
+        self.assertNotIn(self.note, Note.objects.all())
 
     def test_user_cant_delete_note_of_another_user(self):
         notes_in_db_befor_try_to_change = Note.objects.all()
-        response = self.reader_client.delete(DELETE_URL)
+        response = self.reader.delete(DELETE_URL)
         notes_in_db_after_try_to_change = Note.objects.all()
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
         self.assertQuerysetEqual(
@@ -121,39 +90,32 @@ class TestNoteCreateEdit(CreateTestObjects):
         )
 
     def test_author_can_edit_note(self):
-        response = self.author_client.post(
+        response = self.author.post(
             EDIT_URL, data=self.update_form_data
         )
         self.assertRedirects(response, SECCESS_CHANGED_NOTE_URL)
-        self.note.refresh_from_db()
-        self.assertEqual(self.note.text, UPDATE_NOTE_TEXT)
+        note = Note.objects.get(id=self.note.id)
         self.assertEqual(
-            self.note.title, self.update_form_data['title'],
+            note.title, self.update_form_data['title'],
         )
         self.assertEqual(
-            self.note.text, self.update_form_data['text'],
+            note.text, self.update_form_data['text'],
         )
         self.assertEqual(
-            self.note.slug, self.update_form_data['slug'],
+            note.slug, self.update_form_data['slug'],
         )
         self.assertEqual(
-            self.note.author, self.note.author
+            note.author, self.note.author
         )
 
     def test_user_cant_edit_note_of_another_user(self):
-        notes_befor = set(Note.objects.all())
-        response = self.reader_client.post(
+        response = self.reader.post(
             EDIT_URL,
             data=self.update_form_data
         )
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
-        self.note.refresh_from_db()
-        notes_after = set(Note.objects.all())
 
-        created_notes = notes_after.intersection(
-            notes_befor
-        )
-        note = created_notes.pop()
+        note = Note.objects.get(id=self.note.id)
         self.assertEqual(
             note.title, self.form_data['title'],
         )

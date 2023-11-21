@@ -1,4 +1,4 @@
-from http import HTTPStatus
+from http.client import NOT_FOUND, OK
 
 from notes.tests.constants_and_main_class import (
     ADD_NOTE_URL,
@@ -17,11 +17,11 @@ from notes.tests.constants_and_main_class import (
     REDIRECT_AFTER_TRY_SECCESS_CHANGED_NOTE_URL,
     SECCESS_CHANGED_NOTE_URL,
     SIGNUP_URL,
-    CreateTestObjects,
+    TestObjects,
 )
 
 
-class TestRoutes(CreateTestObjects):
+class TestRoutes(TestObjects):
 
     @classmethod
     def setUpTestData(cls):
@@ -31,31 +31,33 @@ class TestRoutes(CreateTestObjects):
 
     def test_pages_availability(self):
         cases = (
-            (HOME_URL, self.client, HTTPStatus.OK),
-            (LOGIN_URL, self.client, HTTPStatus.OK),
-            (LOGOUT_URL, self.client, HTTPStatus.OK),
-            (SIGNUP_URL, self.client, HTTPStatus.OK),
-            (EDIT_URL, self.author_client, HTTPStatus.OK),
-            (EDIT_URL, self.reader_client, HTTPStatus.NOT_FOUND),
-            (DELETE_URL, self.author_client, HTTPStatus.OK),
-            (DELETE_URL, self.reader_client, HTTPStatus.NOT_FOUND),
-            (DETAIL_URL, self.author_client, HTTPStatus.OK),
-            (DETAIL_URL, self.reader_client, HTTPStatus.NOT_FOUND),
-            (ADD_NOTE_URL, self.author_client, HTTPStatus.OK),
-            (ADD_NOTE_URL, self.reader_client, HTTPStatus.OK),
-            (SECCESS_CHANGED_NOTE_URL, self.author_client, HTTPStatus.OK),
-            (SECCESS_CHANGED_NOTE_URL, self.reader_client, HTTPStatus.OK),
-            (LIST_OF_NOTES_URL, self.author_client, HTTPStatus.OK),
-            (LIST_OF_NOTES_URL, self.reader_client, HTTPStatus.OK),
+            (HOME_URL, self.client, OK),
+            (LOGIN_URL, self.client, OK),
+            (LOGOUT_URL, self.client, OK),
+            (SIGNUP_URL, self.client, OK),
+            (EDIT_URL, self.author, OK),
+            (EDIT_URL, self.reader, NOT_FOUND),
+            (DELETE_URL, self.author, OK),
+            (DELETE_URL, self.reader, NOT_FOUND),
+            (DETAIL_URL, self.author, OK),
+            (DETAIL_URL, self.reader, NOT_FOUND),
+            (ADD_NOTE_URL, self.author, OK),
+            (ADD_NOTE_URL, self.reader, OK),
+            (SECCESS_CHANGED_NOTE_URL, self.author, OK),
+            (SECCESS_CHANGED_NOTE_URL, self.reader, OK),
+            (LIST_OF_NOTES_URL, self.author, OK),
+            (LIST_OF_NOTES_URL, self.reader, OK),
         )
         for (
             url,
-            parametrized_client,
-            expected_status,
+            client,
+            expected,
         ) in cases:
-            self.assertEqual(
-                parametrized_client.get(url).status_code, expected_status
-            )
+            with self.subTest():
+                self.assertEqual(
+                    client.get(url).status_code,
+                    expected,
+                )
 
     def test_redirect_for_anonymous_client(self):
         for url, redirect_url in (
@@ -84,5 +86,5 @@ class TestRoutes(CreateTestObjects):
                 REDIRECT_AFTER_TRY_DETAIL_URL,
             ),
         ):
-            with self.subTest(name=url):
+            with self.subTest(url=url):
                 self.assertRedirects(self.client.get(url), redirect_url)
